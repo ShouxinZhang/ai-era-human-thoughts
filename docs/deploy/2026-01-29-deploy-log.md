@@ -129,15 +129,10 @@ Ship a free-to-run “AI时代习题集” platform online with:
 - `pm2 status`
 - `pm2 logs ai-thoughts --lines 200`
 
-### Restart app
-- `pm2 restart ai-thoughts`
+### Fast Restart (Convenience Scripts)
 
-### Update deployment (pull latest)
-- `cd ~/ai-era-human-thoughts/apps/web`
-- `git pull`
-- `npm install`
-- `npm run build`
-- `pm2 restart ai-thoughts`
+- **Production**: `bash apps/web/restart.sh` (Pulls, builds, and restarts PM2)
+- **Local Dev**: `bash apps/web/dev.sh` (Kills port 3000 conflicts and starts hot-reload server)
 
 ## Known Risks / Follow-ups
 - Security:

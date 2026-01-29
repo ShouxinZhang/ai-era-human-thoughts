@@ -1,0 +1,36 @@
+const fs = require('fs');
+const path = require('path');
+const Database = require('better-sqlite3');
+
+const appDir = path.join(__dirname, '..');
+const localDir = path.join(appDir, '.local');
+const dbPath = path.join(localDir, 'entries.db');
+
+fs.mkdirSync(localDir, { recursive: true });
+
+const db = new Database(dbPath);
+
+db.exec(`
+  create table if not exists entries (
+    id integer primary key autoincrement,
+    content text not null,
+    type text not null,
+    created_at text default (datetime('now')),
+    status text default 'open'
+  );
+`);
+
+const count = db.prepare('select count(*) as count from entries').get().count;
+
+if (count === 0) {
+  const insert = db.prepare('insert into entries (content, type) values (?, ?)');
+  insert.run('如何在大模型时代重新定义程序员的价值？', 'problem');
+  insert.run('AI 可能会让初级程序员的岗位减少，但会极快提升高级架构师的产出。', 'thought');
+  insert.run('目前的幻觉问题在垂直领域的法律咨询中非常致命。', 'problem');
+  insert.run('提示词工程可能只是一个过渡阶段，未来的交互应该是更直接的意图对齐。', 'thought');
+  console.log('✅ Local database initialized with mock data.');
+} else {
+  console.log('ℹ️  Local database already has data, skip seeding.');
+}
+
+db.close();

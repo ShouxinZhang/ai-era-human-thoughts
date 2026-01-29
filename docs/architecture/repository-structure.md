@@ -16,6 +16,8 @@ Contains the user-facing applications.
     -   Framework: Next.js (React)
     -   Styling: Tailwind CSS
     -   Purpose: Public interface for browsing and submitting challenges.
+    -   Local Dev Data: `.local/entries.db` (SQLite for offline debugging)
+    -   Scripts: `scripts/` (local init + sync to Supabase)
 
 ### `/core`
 Contains shared business logic and data definitions.
@@ -28,10 +30,13 @@ Project documentation.
 -   `architecture/`: Architectural decisions and structure definitions.
 -   `deploy/`: Step-by-step deployment logs and runbooks.
 
+### `/dev_logs`
+Development logs for each change set (operational snapshots).
+
 ## Data Model (Conceptual)
-The core entity is a **Challenge** (or "Thought").
--   **Type**: Public (Social/Ethics) vs. Technical (Dev/Engineering).
--   **Attributes**: Title, Description, Tags, Created Date.
+The core entity is an **Entry** (simplified thought or problem).
+-   **Type**: `problem` (Challenges/Needs) vs. `thought` (Reflections/Ideas).
+-   **Attributes**: ID (serial), Content, Type, Created Date, Author (Signature).
 
 ## Deployment
 -   **Frontend**: Primary deployment on Tencent Cloud Lighthouse (domestic access). Optional deployment on Vercel.

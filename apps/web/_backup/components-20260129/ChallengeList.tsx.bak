@@ -1,0 +1,104 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { MessageSquare, Code, Clock, Tag } from 'lucide-react';
+
+interface Entry {
+  id: number;
+  content: string;
+  type: 'problem' | 'thought';
+  created_at: string;
+}
+
+export default function EntryList({ filter }: { filter?: 'problem' | 'thought' }) {
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchEntries();
+
+    const channel = supabase
+      .channel('entries-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'entries' },
+        (payload) => {
+          setEntries((prev) => [payload.new as Entry, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  async function fetchEntries() {
+    try {
+      const { data, error } = await supabase
+        .from('entries')
+        .select('*')
+        .order('id', { ascending: false });
+
+      if (error) throw error;
+      setEntries(data || []);
+    } catch (error) {
+      console.error('Error fetching entries:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const displayedEntries = filter 
+    ? entries.filter(e => e.type === filter)
+    : entries;
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {displayedEntries.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+          <p className="text-zinc-500 text-sm">暂无内容，快来分享您的第一条思考吧。</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6">
+          {displayedEntries.map((item) => (
+            <div 
+              key={item.id} 
+              className="p-5 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-sm shadow-sm"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="space-y-1">
+                  <span className="text-xs font-mono text-zinc-500 block">id {item.id}</span>
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                    Type: {item.type === 'problem' ? 'problem' : 'thought'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex gap-4 items-end">
+                <div className="flex-1 border p-3 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50 min-h-[60px] text-sm">
+                  {item.content.length > 50 ? `${item.content.substring(0, 50)}...` : item.content}
+                </div>
+                <button 
+                  className="px-4 py-2 border border-zinc-800 dark:border-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-sm font-medium transition-colors"
+                  onClick={() => alert(item.content)}
+                >
+                  查看
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
