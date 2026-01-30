@@ -21,6 +21,11 @@
 - 使用网页提交一条 Entry 与一条 Feedback，确认表内新增记录。
 
 ## 线上服务（Tencent Lighthouse / PM2）
+### 一键上线（推荐）
+- 在本机执行：
+  - `bash apps/web/deploy-ssh.sh root@<server-ip>`
+- 脚本会自动通过 PM2 定位应用目录并执行 `apps/web/restart.sh`。
+
 ### 1) 拉取代码
 - `git pull`
 

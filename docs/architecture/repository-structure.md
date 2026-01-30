@@ -22,10 +22,11 @@ Contains the user-facing applications.
         -   `sync-to-supabase.mjs`: One-way upsert from local SQLite to Supabase
         -   `add-mock-data.mjs`: Append 3 mock rows without overwriting existing data
     -   Dev Script: `dev.sh` (robust port cleanup + local bootstrap)
+    -   Deploy Script: `deploy-ssh.sh` (one-command SSH deploy to server via `restart.sh`)
     -   UI Components (selected)
         -   `src/components/SubmitEntry.tsx`: Entry submit modal
         -   `src/components/EntryList.tsx`: Entry list rendering
-        -   `src/components/FeedbackButton.tsx`: Footer feedback entry (POST to server, email delivery)
+        -   `src/components/FeedbackButton.tsx`: Footer feedback entry (POST to server, stored in DB)
     -   API Routes (selected)
         -   `src/app/api/entries/route.ts`: Read/write entries (local SQLite or Supabase)
         -   `src/app/api/feedback/route.ts`: Collect feedback and store to local SQLite or Supabase

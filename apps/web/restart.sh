@@ -1,8 +1,11 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Configuration
-APP_DIR="/home/wudizhe001/Documents/GitHub/ai-era-human-thoughts/apps/web"
-PM2_NAME="ai-thoughts"
+APP_DIR="$(cd "$(dirname "$0")" && pwd)"
+PM2_NAME="${PM2_NAME:-ai-thoughts}"
+PORT="${PORT:-3000}"
 
 echo "🚀 Starting restart process for $PM2_NAME..."
 
@@ -23,6 +26,6 @@ npm run build
 
 # Restart PM2 process
 echo "🔄 Restarting PM2 process..."
-pm2 restart "$PM2_NAME" || pm2 start npm --name "$PM2_NAME" -- start -- -p 3000
+pm2 restart "$PM2_NAME" || pm2 start npm --name "$PM2_NAME" -- start -- -p "$PORT"
 
 echo "✅ Restart complete. Check status with 'pm2 status'"
