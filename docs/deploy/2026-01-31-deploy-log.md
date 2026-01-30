@@ -72,6 +72,15 @@ bash apps/web/deploy-ssh.sh root@119.29.70.127
 4. `npm install && npm run build && pm2 restart ai-thoughts`
 5. 健康检查：`curl localhost:3000` 返回 `200 OK`
 
+### Nginx 反代（让 80 端口指向应用）
+- 现象：直接访问 `http://<server-ip>/` 返回 `404 Not Found (nginx)`，但 `http://127.0.0.1:3000/` 是 200。
+- 处理：新增默认站点，将 80 端口反代到 Next.js 进程。
+  - 配置文件：`/etc/nginx/sites-available/ai-thoughts`
+  - 生效方式：`ln -sf /etc/nginx/sites-available/ai-thoughts /etc/nginx/sites-enabled/ai-thoughts` + `nginx -t` + `systemctl reload nginx`
+- 验证：
+  - 服务器：`curl -I http://127.0.0.1/` 返回 200
+  - 外网：`curl -I http://<server-ip>/` 返回 200
+
 ## 风险与后续
 - 当前 `feedback` 只开放 insert（收集阶段）；如要在网页后台查看，需要后续引入鉴权 + select 策略。
 - 建议后续在服务器配置 GitHub SSH key 或镜像，避免每次都走 rsync。
