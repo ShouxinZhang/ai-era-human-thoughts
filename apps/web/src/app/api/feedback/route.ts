@@ -1,35 +1,38 @@
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import { createClient } from '@supabase/supabase-js';
+import Database from 'better-sqlite3';
+import fs from 'fs';
+import path from 'path';
 
-const FEEDBACK_TO = process.env.FEEDBACK_TO || '3304724172@qq.com';
-const FEEDBACK_SUBJECT = process.env.FEEDBACK_SUBJECT || 'AI Era Human Thoughts - Feedback';
-const DRY_RUN = String(process.env.FEEDBACK_DRY_RUN || '').toLowerCase() === 'true';
+const DATA_SOURCE = process.env.NEXT_PUBLIC_DATA_SOURCE
+  || (process.env.NODE_ENV === 'development' ? 'local' : 'supabase');
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-function hasSmtpConfig() {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+function getLocalDb() {
+  const localDir = path.join(process.cwd(), '.local');
+  const dbPath = path.join(localDir, 'entries.db');
+  fs.mkdirSync(localDir, { recursive: true });
+  const db = new Database(dbPath);
+  db.exec(`
+    create table if not exists feedback (
+      id integer primary key autoincrement,
+      message text not null,
+      contact text,
+      page_url text,
+      user_agent text,
+      ip text,
+      created_at text default (datetime('now'))
+    );
+  `);
+  return db;
 }
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing env: ${name}`);
+function getSupabaseClient() {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error('Supabase credentials missing');
   }
-  return value;
-}
-
-function getTransport() {
-  const host = requireEnv('SMTP_HOST');
-  const port = Number(process.env.SMTP_PORT || '465');
-  const user = requireEnv('SMTP_USER');
-  const pass = requireEnv('SMTP_PASS');
-  const secure = String(process.env.SMTP_SECURE || (port === 465 ? 'true' : 'false')).toLowerCase() === 'true';
-
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: { user, pass },
-  });
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
 export async function POST(request: Request) {
@@ -37,6 +40,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const message = String(body?.message || '').trim();
     const contact = String(body?.contact || '').trim();
+    const pageUrlFromBody = String(body?.pageUrl || '').trim();
 
     if (!message) {
       return new NextResponse('Message is required', { status: 400 });
@@ -46,44 +50,53 @@ export async function POST(request: Request) {
       return new NextResponse('Message too long', { status: 400 });
     }
 
-    const ua = request.headers.get('user-agent') || '';
+    const userAgent = request.headers.get('user-agent') || '';
     const referer = request.headers.get('referer') || '';
     const ip =
       request.headers.get('x-forwarded-for') ||
       request.headers.get('x-real-ip') ||
       '';
+    const pageUrl = pageUrlFromBody || referer;
 
-    const lines = [
-      '反馈内容：',
-      message,
-      '',
-      contact ? `联系方式：${contact}` : null,
-      referer ? `来源页面：${referer}` : null,
-      ip ? `IP：${ip}` : null,
-      ua ? `UA：${ua}` : null,
-      `时间：${new Date().toISOString()}`,
-    ].filter(Boolean);
-
-    const text = lines.join('\n');
-
-    const effectiveDryRun = DRY_RUN || (process.env.NODE_ENV === 'development' && !hasSmtpConfig());
-
-    if (effectiveDryRun) {
-      console.log('[feedback][dry-run] to=%s subject=%s\n%s', FEEDBACK_TO, FEEDBACK_SUBJECT, text);
-      return NextResponse.json({ ok: true, dryRun: true });
+    if (DATA_SOURCE === 'local') {
+      const db = getLocalDb();
+      const stmt = db.prepare(
+        'insert into feedback (message, contact, page_url, user_agent, ip) values (?, ?, ?, ?, ?)'
+      );
+      const info = stmt.run(
+        message,
+        contact || null,
+        pageUrl || null,
+        userAgent || null,
+        ip || null,
+      );
+      const row = db
+        .prepare('select * from feedback where id = ?')
+        .get(info.lastInsertRowid);
+      db.close();
+      return NextResponse.json({ ok: true, data: row });
     }
 
-    const transporter = getTransport();
-    const from = process.env.FEEDBACK_FROM || process.env.SMTP_USER || FEEDBACK_TO;
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('feedback')
+      .insert([
+        {
+          message,
+          contact: contact || null,
+          page_url: pageUrl || null,
+          user_agent: userAgent || null,
+          ip: ip || null,
+        },
+      ])
+      .select()
+      .single();
 
-    await transporter.sendMail({
-      from,
-      to: FEEDBACK_TO,
-      subject: FEEDBACK_SUBJECT,
-      text,
-    });
+    if (error) {
+      return new NextResponse(error.message, { status: 500 });
+    }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, data });
   } catch (error) {
     const message = (error as Error).message || 'Unknown error';
     return new NextResponse(message, { status: 500 });

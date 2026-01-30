@@ -26,7 +26,11 @@ export default function FeedbackButton() {
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed, contact: contact.trim() }),
+        body: JSON.stringify({
+          message: trimmed,
+          contact: contact.trim(),
+          pageUrl: typeof window !== 'undefined' ? window.location.href : '',
+        }),
       });
 
       if (!res.ok) {
@@ -38,7 +42,7 @@ export default function FeedbackButton() {
       setMessage('');
       setContact('');
       setIsOpen(false);
-      alert('反馈已发送，感谢你的建议！');
+      alert('反馈已提交，感谢你的建议！');
     } catch (err) {
       setStatus('error');
       setErrorText((err as Error).message);
@@ -74,7 +78,7 @@ export default function FeedbackButton() {
         </div>
 
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 leading-relaxed">
-          点击“发送”会由服务器直接把反馈发送到维护者邮箱。
+          点击“发送”会把反馈保存到反馈数据库，便于后续统一处理。
         </p>
 
         <div className="space-y-4">

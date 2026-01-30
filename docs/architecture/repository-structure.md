@@ -28,7 +28,7 @@ Contains the user-facing applications.
         -   `src/components/FeedbackButton.tsx`: Footer feedback entry (POST to server, email delivery)
     -   API Routes (selected)
         -   `src/app/api/entries/route.ts`: Read/write entries (local SQLite or Supabase)
-        -   `src/app/api/feedback/route.ts`: Collect feedback and send email via SMTP
+        -   `src/app/api/feedback/route.ts`: Collect feedback and store to local SQLite or Supabase
 
 ### `/core`
 Contains shared business logic and data definitions.
@@ -48,6 +48,9 @@ Development logs for each change set (operational snapshots).
 The core entity is an **Entry** (simplified thought or problem).
 -   **Type**: `problem` (Challenges/Needs) vs. `thought` (Reflections/Ideas).
 -   **Attributes**: ID (serial), Content, Type, Created Date, Author (Signature), Age, Occupation, City.
+
+The supporting entity is **Feedback** (user suggestions/issues for triage).
+-   **Attributes**: ID (serial), Message, Contact, Page URL, User Agent, IP, Created Date.
 
 ## Deployment
 -   **Frontend**: Primary deployment on Tencent Cloud Lighthouse (domestic access). Optional deployment on Vercel.

@@ -24,6 +24,18 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  create table if not exists feedback (
+    id integer primary key autoincrement,
+    message text not null,
+    contact text,
+    page_url text,
+    user_agent text,
+    ip text,
+    created_at text default (datetime('now'))
+  );
+`);
+
 const columns = db
   .prepare("select name from pragma_table_info('entries')")
   .all()

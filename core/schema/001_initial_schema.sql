@@ -42,6 +42,24 @@ create policy "Anyone can insert entries"
   on entries for insert 
   with check ( true );
 
+-- Feedback table (store user feedback for triage)
+create table feedback (
+  id serial primary key,
+  message text not null,
+  contact text,
+  page_url text,
+  user_agent text,
+  ip text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table feedback enable row level security;
+
+-- Policy: Anyone can insert feedback (collection phase)
+create policy "Anyone can insert feedback" 
+  on feedback for insert 
+  with check ( true );
+
 -- Mock Data
 insert into entries (content, type, author) values 
 ('如何在大模型时代重新定义程序员的价值？', 'problem', 'LLM MOCK'),
