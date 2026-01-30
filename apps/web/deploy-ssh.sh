@@ -2,18 +2,27 @@
 
 set -euo pipefail
 
+# ============== Configuration ==============
 HOST="${1:-}" # e.g. root@119.29.70.127
 KEY_PATH="${KEY_PATH:-$HOME/.ssh/id_ed25519}"
 PM2_NAME="${PM2_NAME:-ai-thoughts}"
 PORT="${PORT:-3000}"
+USE_RSYNC="${USE_RSYNC:-auto}" # auto | yes | no
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 if [ -z "$HOST" ]; then
   echo "Usage: bash apps/web/deploy-ssh.sh <user@host>"
   echo "Example: bash apps/web/deploy-ssh.sh root@119.29.70.127"
+  echo ""
+  echo "Options (env vars):"
+  echo "  KEY_PATH   - SSH private key path (default: ~/.ssh/id_ed25519)"
+  echo "  USE_RSYNC  - auto|yes|no (default: auto, uses rsync if git pull fails)"
   exit 1
 fi
 
-SSH_BASE=(ssh -i "$KEY_PATH" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8)
+SSH_OPTS="-i $KEY_PATH -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10"
 
 if [ ! -f "$KEY_PATH" ]; then
   echo "❌ SSH key not found: $KEY_PATH"
@@ -22,74 +31,74 @@ if [ ! -f "$KEY_PATH" ]; then
 fi
 
 echo "🔐 Checking SSH connectivity to $HOST ..."
-if ! "${SSH_BASE[@]}" -o BatchMode=yes "$HOST" "echo ok" >/dev/null 2>&1; then
+if ! ssh $SSH_OPTS -o BatchMode=yes "$HOST" "echo ok" >/dev/null 2>&1; then
   echo "⚠️  SSH key auth failed."
   echo "Run one of these to install your public key (will prompt for password):"
   echo "  ssh-copy-id -i ${KEY_PATH}.pub $HOST"
-  echo "  cat ${KEY_PATH}.pub | ssh $HOST 'mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys'"
   exit 1
 fi
+echo "✅ SSH connected."
 
-echo "🔎 Locating app directory on server (via PM2 or common paths)..."
-REMOTE_FIND='set -euo pipefail
-PM2_NAME="'"$PM2_NAME"'"
-PORT="'"$PORT"'"
+# ============== Locate remote app directory ==============
+echo "🔎 Locating app directory on server..."
+REMOTE_APP_DIR=$(ssh $SSH_OPTS "$HOST" 'pm2 jlist 2>/dev/null | grep -oP "\"pm_cwd\":\s*\"\K[^\"]+" | head -1 || true')
 
-find_by_pm2() {
-  if ! command -v pm2 >/dev/null 2>&1; then
-    return 1
-  fi
-  local cwd
-  cwd=$(pm2 jlist 2>/dev/null | node -e "const fs=require('fs');const input=fs.readFileSync(0,'utf8');let j=[];try{j=JSON.parse(input)}catch(e){};const p=j.find(x=>x&&x.name===process.env.PM2_NAME);process.stdout.write((p&&p.pm2_env&&p.pm2_env.pm_cwd)||'')" PM2_NAME="$PM2_NAME")
-  if [ -n "$cwd" ] && [ -d "$cwd" ]; then
-    echo "$cwd"
-    return 0
-  fi
-  return 1
-}
-
-find_by_paths() {
-  for d in \
-    /root/ai-era-human-thoughts/apps/web \
-    /root/Documents/GitHub/ai-era-human-thoughts/apps/web \
-    /home/*/ai-era-human-thoughts/apps/web \
-    /home/*/Documents/GitHub/ai-era-human-thoughts/apps/web
-  do
-    if [ -d "$d" ] && [ -f "$d/restart.sh" ]; then
-      echo "$d"
-      return 0
-    fi
-  done
-  return 1
-}
-
-APP_DIR=""
-APP_DIR=$(find_by_pm2 || true)
-if [ -z "$APP_DIR" ]; then
-  APP_DIR=$(find_by_paths || true)
+if [ -z "$REMOTE_APP_DIR" ]; then
+  # Fallback: search common paths
+  REMOTE_APP_DIR=$(ssh $SSH_OPTS "$HOST" '
+    for d in /root/ai-era-human-thoughts/apps/web /home/*/ai-era-human-thoughts/apps/web; do
+      [ -f "$d/restart.sh" ] && echo "$d" && exit 0
+    done
+  ' || true)
 fi
 
-if [ -z "$APP_DIR" ]; then
+if [ -z "$REMOTE_APP_DIR" ]; then
   echo "❌ Could not locate apps/web on server."
-  echo "Tip: ensure the repo is cloned and PM2 process exists ($PM2_NAME)."
+  echo "Tip: clone the repo first, or set remote path manually."
   exit 2
 fi
 
-echo "✅ APP_DIR=$APP_DIR"
-cd "$APP_DIR"
+REMOTE_REPO_ROOT="$(dirname "$(dirname "$REMOTE_APP_DIR")")"
+echo "✅ Remote app dir: $REMOTE_APP_DIR"
 
-echo "🚀 Running restart.sh ..."
-PM2_NAME="$PM2_NAME" PORT="$PORT" bash ./restart.sh
+# ============== Sync code ==============
+sync_with_git() {
+  echo "📥 Pulling latest code via git..."
+  ssh $SSH_OPTS "$HOST" "cd '$REMOTE_REPO_ROOT' && git pull" 2>&1
+}
 
-echo "📊 PM2 status:" 
-pm2 status "$PM2_NAME" || true
+sync_with_rsync() {
+  echo "📦 Syncing code via rsync (bypassing GitHub access issues)..."
+  rsync -avz --delete \
+    --exclude='.next' \
+    --exclude='node_modules' \
+    --exclude='.local' \
+    --exclude='.env.local' \
+    -e "ssh $SSH_OPTS" \
+    "$REPO_ROOT/" "$HOST:$REMOTE_REPO_ROOT/"
+}
 
-echo "🌐 Health check:" 
-if command -v curl >/dev/null 2>&1; then
-  curl -sSI "http://localhost:$PORT" | head -n 1 || true
+if [ "$USE_RSYNC" = "yes" ]; then
+  sync_with_rsync
+elif [ "$USE_RSYNC" = "no" ]; then
+  sync_with_git
+else
+  # auto: try git first, fallback to rsync
+  if ! sync_with_git; then
+    echo "⚠️  git pull failed (network issue?). Falling back to rsync..."
+    sync_with_rsync
+  fi
 fi
-'
 
-"${SSH_BASE[@]}" "$HOST" "$REMOTE_FIND"
+# ============== Build & Restart ==============
+echo "🏗️  Building and restarting on server..."
+ssh $SSH_OPTS "$HOST" "cd '$REMOTE_APP_DIR' && npm install && npm run build && pm2 restart '$PM2_NAME' || pm2 start npm --name '$PM2_NAME' -- start -- -p $PORT"
+
+# ============== Health check ==============
+echo "📊 PM2 status:"
+ssh $SSH_OPTS "$HOST" "pm2 status '$PM2_NAME'" || true
+
+echo "🌐 Health check:"
+ssh $SSH_OPTS "$HOST" "curl -sI http://localhost:$PORT | head -1" || true
 
 echo "✅ Deploy finished."
