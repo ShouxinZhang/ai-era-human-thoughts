@@ -21,7 +21,10 @@ function getLocalDb() {
       type text not null,
       created_at text default (datetime('now')),
       status text default 'open',
-      author text default '匿名'
+      author text default '匿名',
+      age text,
+      occupation text,
+      city text
     );
   `);
   const columns = db
@@ -30,6 +33,15 @@ function getLocalDb() {
   const columnNames = columns.map((row) => row.name);
   if (!columnNames.includes('author')) {
     db.exec("alter table entries add column author text default '匿名'");
+  }
+  if (!columnNames.includes('age')) {
+    db.exec("alter table entries add column age text");
+  }
+  if (!columnNames.includes('occupation')) {
+    db.exec("alter table entries add column occupation text");
+  }
+  if (!columnNames.includes('city')) {
+    db.exec("alter table entries add column city text");
   }
   return db;
 }
@@ -46,7 +58,7 @@ export async function GET() {
     if (DATA_SOURCE === 'local') {
       const db = getLocalDb();
       const rows = db
-        .prepare('select id, content, type, created_at, author from entries order by id desc')
+        .prepare('select id, content, type, created_at, author, age, occupation, city from entries order by id desc')
         .all();
       db.close();
       return NextResponse.json({ data: rows });
@@ -74,6 +86,9 @@ export async function POST(request: Request) {
     const content = String(body?.content || '').trim();
     const type = body?.type === 'thought' ? 'thought' : 'problem';
     const author = String(body?.author || '').trim() || '匿名';
+    const age = String(body?.age || '').trim() || null;
+    const occupation = String(body?.occupation || '').trim() || null;
+    const city = String(body?.city || '').trim() || null;
 
     if (!content) {
       return new NextResponse('Content is required', { status: 400 });
@@ -82,11 +97,11 @@ export async function POST(request: Request) {
     if (DATA_SOURCE === 'local') {
       const db = getLocalDb();
       const stmt = db.prepare(
-        'insert into entries (content, type, author) values (?, ?, ?)' 
+        'insert into entries (content, type, author, age, occupation, city) values (?, ?, ?, ?, ?, ?)' 
       );
-      const info = stmt.run(content, type, author);
+      const info = stmt.run(content, type, author, age, occupation, city);
       const row = db
-        .prepare('select id, content, type, created_at, author from entries where id = ?')
+        .prepare('select id, content, type, created_at, author, age, occupation, city from entries where id = ?')
         .get(info.lastInsertRowid);
       db.close();
       return NextResponse.json({ data: row });
@@ -95,7 +110,7 @@ export async function POST(request: Request) {
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('entries')
-      .insert([{ content, type, author }])
+      .insert([{ content, type, author, age, occupation, city }])
       .select()
       .single();
 

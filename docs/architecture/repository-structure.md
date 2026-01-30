@@ -17,8 +17,18 @@ Contains the user-facing applications.
     -   Styling: Tailwind CSS
     -   Purpose: Public interface for browsing and submitting challenges.
     -   Local Dev Data: `.local/entries.db` (SQLite for offline debugging)
-    -   Scripts: `scripts/` (local init + sync to Supabase)
+    -   Scripts: `scripts/`
+        -   `local-init.mjs`: Create/migrate local SQLite and seed (first run only)
+        -   `sync-to-supabase.mjs`: One-way upsert from local SQLite to Supabase
+        -   `add-mock-data.mjs`: Append 3 mock rows without overwriting existing data
     -   Dev Script: `dev.sh` (robust port cleanup + local bootstrap)
+    -   UI Components (selected)
+        -   `src/components/SubmitEntry.tsx`: Entry submit modal
+        -   `src/components/EntryList.tsx`: Entry list rendering
+        -   `src/components/FeedbackButton.tsx`: Footer feedback entry (POST to server, email delivery)
+    -   API Routes (selected)
+        -   `src/app/api/entries/route.ts`: Read/write entries (local SQLite or Supabase)
+        -   `src/app/api/feedback/route.ts`: Collect feedback and send email via SMTP
 
 ### `/core`
 Contains shared business logic and data definitions.
@@ -37,7 +47,7 @@ Development logs for each change set (operational snapshots).
 ## Data Model (Conceptual)
 The core entity is an **Entry** (simplified thought or problem).
 -   **Type**: `problem` (Challenges/Needs) vs. `thought` (Reflections/Ideas).
--   **Attributes**: ID (serial), Content, Type, Created Date, Author (Signature).
+-   **Attributes**: ID (serial), Content, Type, Created Date, Author (Signature), Age, Occupation, City.
 
 ## Deployment
 -   **Frontend**: Primary deployment on Tencent Cloud Lighthouse (domestic access). Optional deployment on Vercel.

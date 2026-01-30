@@ -9,6 +9,9 @@ export default function SubmitEntry() {
     content: '',
     type: 'problem' as 'problem' | 'thought',
     author: '',
+    age: '',
+    occupation: '',
+    city: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +30,7 @@ export default function SubmitEntry() {
         throw new Error(message || '提交失败');
       }
 
-      setFormData({ content: '', type: 'problem', author: '' });
+      setFormData({ content: '', type: 'problem', author: '', age: '', occupation: '', city: '' });
       setIsOpen(false);
       window.dispatchEvent(new Event('entries:updated'));
     } catch (error) {
@@ -80,6 +83,35 @@ export default function SubmitEntry() {
               value={formData.author}
               onChange={e => setFormData({ ...formData, author: e.target.value })}
             />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-zinc-500 mb-2">Age</label>
+              <input
+                className="w-full p-3 text-sm bg-zinc-50 dark:bg-zinc-800 rounded-lg border-none focus:ring-2 focus:ring-[#07C160] outline-none transition-all placeholder:text-zinc-400"
+                placeholder="如 28 / 28岁"
+                value={formData.age}
+                onChange={e => setFormData({ ...formData, age: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-500 mb-2">Occupation</label>
+              <input
+                className="w-full p-3 text-sm bg-zinc-50 dark:bg-zinc-800 rounded-lg border-none focus:ring-2 focus:ring-[#07C160] outline-none transition-all placeholder:text-zinc-400"
+                placeholder="职业 / Job"
+                value={formData.occupation}
+                onChange={e => setFormData({ ...formData, occupation: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-500 mb-2">City</label>
+              <input
+                className="w-full p-3 text-sm bg-zinc-50 dark:bg-zinc-800 rounded-lg border-none focus:ring-2 focus:ring-[#07C160] outline-none transition-all placeholder:text-zinc-400"
+                placeholder="城市 / City"
+                value={formData.city}
+                onChange={e => setFormData({ ...formData, city: e.target.value })}
+              />
+            </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-zinc-500 mb-2">Content</label>

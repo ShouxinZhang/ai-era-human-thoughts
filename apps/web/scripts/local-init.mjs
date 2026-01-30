@@ -17,7 +17,10 @@ db.exec(`
     type text not null,
     created_at text default (datetime('now')),
     status text default 'open',
-    author text default '匿名'
+    author text default '匿名',
+    age text,
+    occupation text,
+    city text
   );
 `);
 
@@ -29,6 +32,15 @@ const columns = db
 if (!columns.includes('author')) {
   db.exec("alter table entries add column author text default '匿名'");
 }
+if (!columns.includes('age')) {
+  db.exec("alter table entries add column age text");
+}
+if (!columns.includes('occupation')) {
+  db.exec("alter table entries add column occupation text");
+}
+if (!columns.includes('city')) {
+  db.exec("alter table entries add column city text");
+}
 
 const count = db.prepare('select count(*) as count from entries').get().count;
 
@@ -36,8 +48,6 @@ if (count === 0) {
   const insert = db.prepare('insert into entries (content, type) values (?, ?)');
   insert.run('如何在大模型时代重新定义程序员的价值？', 'problem');
   insert.run('AI 可能会让初级程序员的岗位减少，但会极快提升高级架构师的产出。', 'thought');
-  insert.run('目前的幻觉问题在垂直领域的法律咨询中非常致命。', 'problem');
-  insert.run('提示词工程可能只是一个过渡阶段，未来的交互应该是更直接的意图对齐。', 'thought');
   db.exec("update entries set author = 'LLM MOCK'");
   console.log('✅ Local database initialized with mock data.');
 } else {
@@ -50,8 +60,7 @@ db.exec(`
   where content in (
     '如何在大模型时代重新定义程序员的价值？',
     'AI 可能会让初级程序员的岗位减少，但会极快提升高级架构师的产出。',
-    '目前的幻觉问题在垂直领域的法律咨询中非常致命。',
-    '提示词工程可能只是一个过渡阶段，未来的交互应该是更直接的意图对齐。'
+    '目前的幻觉问题在垂直领域的法律咨询中非常致命。'
   )
   and (author is null or author = '' or author = '匿名');
 `);

@@ -19,6 +19,11 @@ create table entries (
 
   -- Signature
   author text default '匿名',
+
+  -- Demographics (free input)
+  age text,
+  occupation text,
+  city text,
   
   -- Metadata
   author_id uuid references auth.users(id)

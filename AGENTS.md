@@ -17,8 +17,10 @@ Before any file deletion or rollback, you must create a backup.
 
 - 前端代码写完后, 自行check lint以及npm run dev，查看是否有报错, 如果有错误，就自行修改, 直到没有错误为止
 - dev_logs中存放每一次开发的日志, 需要详细记录修改了哪些文件, 做了什么. 每次修改完都应该更新dev_logs. dev_logs文档最好是可以类似于数据库的特性那样，可以随时回滚快照
+- 自动更新repository-structure.md
 
 负面提示词（严厉禁止的行为):
 
 - 写完代码不作任何检查, 也不自主运行测试, 很多报错和bug
 - 开发完成不在dev_logs里写日志，造成开发记忆丢失, 后期维护困难
+- 开发新的功能后，不写repository-structure.md文档

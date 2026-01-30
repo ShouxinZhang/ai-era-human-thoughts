@@ -3,6 +3,7 @@
 import { useState } from "react";
 import SubmitEntry from "@/components/SubmitEntry";
 import EntryList from "@/components/EntryList";
+import FeedbackButton from "@/components/FeedbackButton";
 
 export default function Home() {
   const [filter, setFilter] = useState<'problem' | 'thought' | undefined>(undefined);
@@ -52,6 +53,9 @@ export default function Home() {
 
         {/* Simple Footer */}
         <footer className="mt-24 pt-8 text-[12px] text-zinc-400 text-center tracking-wide">
+          <div className="flex justify-center mb-4">
+            <FeedbackButton />
+          </div>
           Repository: ai-era-human-thoughts // 2026
         </footer>
       </main>

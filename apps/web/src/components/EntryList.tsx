@@ -8,6 +8,9 @@ interface Entry {
   type: 'problem' | 'thought';
   created_at: string;
   author?: string;
+  age?: string | null;
+  occupation?: string | null;
+  city?: string | null;
 }
 
 export default function EntryList({ filter }: { filter?: 'problem' | 'thought' }) {
@@ -71,42 +74,56 @@ export default function EntryList({ filter }: { filter?: 'problem' | 'thought' }
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
-          {displayedEntries.map((item) => (
-            <div 
-              key={item.id} 
-              className="p-6 bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border-none"
-            >
+          {displayedEntries.map((item) => {
+            const detailItems = [
+              item.age ? `年龄: ${item.age}` : null,
+              item.occupation ? `职业: ${item.occupation}` : null,
+              item.city ? `城市: ${item.city}` : null,
+            ].filter(Boolean) as string[];
 
-              <div className="flex items-start justify-between gap-6 mb-4">
-                <div>
-                  <div className="text-xs font-mono text-zinc-400">id {item.id}</div>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-zinc-500 dark:text-zinc-400">
-                    <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-600 dark:text-zinc-300">
-                      {item.type}
-                    </span>
-                    <span>
-                      {new Date(item.created_at).toLocaleString()}
-                    </span>
-                    <span>
-                      {item.author || '匿名'}
-                    </span>
+            return (
+              <div 
+                key={item.id} 
+                className="p-6 bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border-none"
+              >
+                <div className="flex items-start justify-between gap-6 mb-4">
+                  <div>
+                    <div className="text-xs font-mono text-zinc-400">id {item.id}</div>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-zinc-500 dark:text-zinc-400">
+                      <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-600 dark:text-zinc-300">
+                        {item.type}
+                      </span>
+                      <span>
+                        {new Date(item.created_at).toLocaleString()}
+                      </span>
+                      <span>
+                        {item.author || '匿名'}
+                      </span>
+                    </div>
+                    {detailItems.length > 0 && (
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-zinc-500 dark:text-zinc-400">
+                        {detailItems.map((detail) => (
+                          <span key={detail}>{detail}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-stretch">
-                <div className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 py-2">
-                  {item.content.length > 80 ? `${item.content.substring(0, 80)}...` : item.content}
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-stretch">
+                  <div className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 py-2">
+                    {item.content.length > 80 ? `${item.content.substring(0, 80)}...` : item.content}
+                  </div>
+                  <button 
+                    className="px-6 py-2 bg-[#07C160] hover:bg-[#06ad56] text-white text-sm font-medium transition-colors rounded-lg shadow-sm border-none self-center"
+                    onClick={() => alert(item.content)}
+                  >
+                    查看
+                  </button>
                 </div>
-                <button 
-                  className="px-6 py-2 bg-[#07C160] hover:bg-[#06ad56] text-white text-sm font-medium transition-colors rounded-lg shadow-sm border-none self-center"
-                  onClick={() => alert(item.content)}
-                >
-                  查看
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

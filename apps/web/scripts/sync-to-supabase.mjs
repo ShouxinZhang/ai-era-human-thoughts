@@ -15,7 +15,7 @@ const dbPath = path.join(appDir, '.local', 'entries.db');
 const db = new Database(dbPath, { readonly: true });
 
 const rows = db
-  .prepare('select id, content, type, created_at, status, author from entries order by id asc')
+  .prepare('select id, content, type, created_at, status, author, age, occupation, city from entries order by id asc')
   .all();
 
 db.close();
