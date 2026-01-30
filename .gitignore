@@ -1,0 +1,7 @@
+# Root ignore rules
+
+# VS Code workspace settings
+.vscode/
+
+# OS / misc
+.DS_Store
