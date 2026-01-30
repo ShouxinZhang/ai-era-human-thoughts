@@ -18,6 +18,7 @@ Contains the user-facing applications.
     -   Purpose: Public interface for browsing and submitting challenges.
     -   Local Dev Data: `.local/entries.db` (SQLite for offline debugging)
     -   Scripts: `scripts/` (local init + sync to Supabase)
+    -   Dev Script: `dev.sh` (robust port cleanup + local bootstrap)
 
 ### `/core`
 Contains shared business logic and data definitions.

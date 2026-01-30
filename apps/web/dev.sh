@@ -13,15 +13,21 @@ cd "$APP_DIR" || { echo "❌ Failed to navigate to $APP_DIR"; exit 1; }
 # Check for process on port 3000 and kill it if exists
 echo "🔍 Checking for existing service on port $PORT..."
 find_pid() {
+  local pid=""
+
   if command -v lsof >/dev/null 2>&1; then
-    lsof -t -i:$PORT
-  elif command -v ss >/dev/null 2>&1; then
-    ss -lptn "sport = :$PORT" 2>/dev/null | awk -F'pid=|,' 'NR>1 {print $2}'
-  elif command -v fuser >/dev/null 2>&1; then
-    fuser $PORT/tcp 2>/dev/null
-  else
-    echo ""
+    pid=$(lsof -nP -t -iTCP:$PORT -sTCP:LISTEN | head -n 1)
   fi
+
+  if [ -z "$pid" ] && command -v ss >/dev/null 2>&1; then
+    pid=$(ss -lptn "sport = :$PORT" 2>/dev/null | awk -F'pid=|,fd=' 'NR>1 {print $2}' | head -n 1)
+  fi
+
+  if [ -z "$pid" ] && command -v fuser >/dev/null 2>&1; then
+    pid=$(fuser $PORT/tcp 2>/dev/null | head -n 1)
+  fi
+
+  echo "$pid"
 }
 
 PID=$(find_pid)

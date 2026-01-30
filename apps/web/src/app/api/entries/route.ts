@@ -26,9 +26,9 @@ function getLocalDb() {
   `);
   const columns = db
     .prepare("select name from pragma_table_info('entries')")
-    .all()
-    .map((row: { name: string }) => row.name);
-  if (!columns.includes('author')) {
+    .all() as { name: string }[];
+  const columnNames = columns.map((row) => row.name);
+  if (!columnNames.includes('author')) {
     db.exec("alter table entries add column author text default '匿名'");
   }
   return db;

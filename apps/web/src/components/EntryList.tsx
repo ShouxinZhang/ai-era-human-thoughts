@@ -74,32 +74,32 @@ export default function EntryList({ filter }: { filter?: 'problem' | 'thought' }
           {displayedEntries.map((item) => (
             <div 
               key={item.id} 
-              className="p-5 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg shadow-sm"
+              className="p-6 bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border-none"
             >
 
               <div className="flex items-start justify-between gap-6 mb-4">
                 <div>
-                  <div className="text-xs font-mono text-zinc-500">id {item.id}</div>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-zinc-600 dark:text-zinc-400">
-                    <span>
-                      Type: <span className="font-semibold">{item.type}</span>
+                  <div className="text-xs font-mono text-zinc-400">id {item.id}</div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-zinc-500 dark:text-zinc-400">
+                    <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-600 dark:text-zinc-300">
+                      {item.type}
                     </span>
                     <span>
-                      Created: <span className="font-semibold">{new Date(item.created_at).toLocaleString()}</span>
+                      {new Date(item.created_at).toLocaleString()}
                     </span>
                     <span>
-                      Author: <span className="font-semibold">{item.author || '匿名'}</span>
+                      {item.author || '匿名'}
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-stretch">
-                <div className="border p-4 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50 min-h-[72px] text-sm leading-relaxed rounded-md">
+                <div className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 py-2">
                   {item.content.length > 80 ? `${item.content.substring(0, 80)}...` : item.content}
                 </div>
                 <button 
-                  className="px-6 py-3 border border-zinc-800 dark:border-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-sm font-semibold transition-colors rounded-md"
+                  className="px-6 py-2 bg-[#07C160] hover:bg-[#06ad56] text-white text-sm font-medium transition-colors rounded-lg shadow-sm border-none self-center"
                   onClick={() => alert(item.content)}
                 >
                   查看
