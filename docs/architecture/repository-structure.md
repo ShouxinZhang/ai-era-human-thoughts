@@ -41,9 +41,12 @@ Contains shared business logic and data definitions.
 Project documentation.
 -   `architecture/`: Architectural decisions and structure definitions.
 -   `deploy/`: Step-by-step deployment logs and runbooks.
+-   `work_logs/`: Operational / investigation notes grouped by date.
+    -   Format: `docs/work_logs/YYYY-MM-DD/<topic>.md`
 
 ### `/dev_logs`
 Development logs for each change set (operational snapshots).
+-   New format (recommended): `dev_logs/YYYY-MM-DD/<topic>.md`
 
 ## Data Model (Conceptual)
 The core entity is an **Entry** (simplified thought or problem).
