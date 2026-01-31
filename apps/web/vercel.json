@@ -1,0 +1,5 @@
+{
+  "env": {
+    "NEXT_PUBLIC_DATA_SOURCE": "supabase"
+  }
+}
