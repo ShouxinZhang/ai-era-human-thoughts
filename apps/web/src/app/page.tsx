@@ -4,6 +4,7 @@ import { useState } from "react";
 import SubmitEntry from "@/components/SubmitEntry";
 import EntryList from "@/components/EntryList";
 import FeedbackButton from "@/components/FeedbackButton";
+import DesignPurpose from "@/components/DesignPurpose";
 import { Download } from "lucide-react";
 
 export default function Home() {
@@ -24,6 +25,8 @@ export default function Home() {
           <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl mb-6 leading-relaxed">
             人工智能快速发展的时代，AI能帮人类做的事情越来越多。这时，人工智能还不能做到的事情，人们基于真实物理世界的思考和想法，以及，人们在日常生活中遇到的实际问题，就显得格外重要。
           </p>
+
+          <DesignPurpose />
 
           <div className="flex gap-2 items-center bg-white dark:bg-zinc-900 p-1 rounded-lg shadow-sm w-fit">
             <button 
