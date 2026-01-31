@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 
@@ -9,7 +8,8 @@ const DATA_SOURCE = process.env.NEXT_PUBLIC_DATA_SOURCE
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-function getLocalDb() {
+async function getLocalDb() {
+  const Database = (await import('better-sqlite3')).default;
   const localDir = path.join(process.cwd(), '.local');
   const dbPath = path.join(localDir, 'entries.db');
   fs.mkdirSync(localDir, { recursive: true });
@@ -56,7 +56,7 @@ function getSupabaseClient() {
 export async function GET() {
   try {
     if (DATA_SOURCE === 'local') {
-      const db = getLocalDb();
+      const db = await getLocalDb();
       const rows = db
         .prepare('select id, content, type, created_at, author, age, occupation, city from entries order by id desc')
         .all();
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
     }
 
     if (DATA_SOURCE === 'local') {
-      const db = getLocalDb();
+      const db = await getLocalDb();
       const stmt = db.prepare(
         'insert into entries (content, type, author, age, occupation, city) values (?, ?, ?, ?, ?, ?)' 
       );

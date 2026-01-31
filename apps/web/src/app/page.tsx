@@ -4,6 +4,7 @@ import { useState } from "react";
 import SubmitEntry from "@/components/SubmitEntry";
 import EntryList from "@/components/EntryList";
 import FeedbackButton from "@/components/FeedbackButton";
+import { Download } from "lucide-react";
 
 export default function Home() {
   const [filter, setFilter] = useState<'problem' | 'thought' | undefined>(undefined);
@@ -53,8 +54,16 @@ export default function Home() {
 
         {/* Simple Footer */}
         <footer className="mt-24 pt-8 text-[12px] text-zinc-400 text-center tracking-wide">
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center items-center gap-4 mb-4">
             <FeedbackButton />
+            <a 
+              href="/api/export" 
+              download
+              className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center gap-2"
+            >
+              <Download size={16} />
+              <span>导出 JSON</span>
+            </a>
           </div>
           Repository: ai-era-human-thoughts // 2026
         </footer>

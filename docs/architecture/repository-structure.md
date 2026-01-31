@@ -20,6 +20,7 @@ Contains the user-facing applications.
     -   Scripts: `scripts/`
         -   `local-init.mjs`: Create/migrate local SQLite and seed (first run only)
         -   `sync-to-supabase.mjs`: One-way upsert from local SQLite to Supabase
+        -   `pull-from-supabase.mjs`: One-way sync from Supabase back to local SQLite
         -   `add-mock-data.mjs`: Append 3 mock rows without overwriting existing data
     -   Dev Script: `dev.sh` (robust port cleanup + local bootstrap)
     -   Deploy Script: `deploy-ssh.sh` (one-command SSH deploy to server via `restart.sh`)
@@ -57,6 +58,7 @@ The supporting entity is **Feedback** (user suggestions/issues for triage).
 -   **Attributes**: ID (serial), Message, Contact, Page URL, User Agent, IP, Created Date.
 
 ## Deployment
--   **Frontend**: Primary deployment on Tencent Cloud Lighthouse (domestic access). Optional deployment on Vercel.
--   **Reverse Proxy**: Nginx (port 80) with app services on dedicated ports (e.g., 3000).
+-   **Frontend**: Primary deployment on Tencent Cloud Lighthouse (domestic access). Optional deployment on Vercel for global fast access.
+-   **Vercel Configuration**: `vercel.json` in the root and `docs/deploy/vercel-deployment.md` guide.
+-   **Reverse Proxy**: Nginx (port 80) with app services on dedicated ports (e.g., 3000) for server-based deployment.
 -   **Backend**: Supabase (Cloud PostgreSQL).

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "local:init": "node scripts/local-init.mjs",
     "local:sync": "node scripts/sync-to-supabase.mjs",
+    "local:pull": "node scripts/pull-from-supabase.mjs",
     "local:mock": "node scripts/add-mock-data.mjs"
   },
   "dependencies": {
