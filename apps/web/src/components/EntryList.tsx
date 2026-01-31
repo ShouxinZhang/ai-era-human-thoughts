@@ -17,6 +17,7 @@ export default function EntryList({ filter }: { filter?: 'problem' | 'thought' }
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedContent, setSelectedContent] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEntries();
@@ -116,7 +117,7 @@ export default function EntryList({ filter }: { filter?: 'problem' | 'thought' }
                   </div>
                   <button 
                     className="px-6 py-2 bg-[#07C160] hover:bg-[#06ad56] text-white text-sm font-medium transition-colors rounded-lg shadow-sm border-none self-center"
-                    onClick={() => alert(item.content)}
+                    onClick={() => setSelectedContent(item.content)}
                   >
                     查看
                   </button>
@@ -124,6 +125,40 @@ export default function EntryList({ filter }: { filter?: 'problem' | 'thought' }
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* WeChat Style Detail Modal */}
+      {selectedContent && (
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[60] flex items-center justify-center p-6"
+          onClick={() => setSelectedContent(null)}
+        >
+          <div 
+            className="w-full max-w-lg animate-in fade-in zoom-in duration-200"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="relative group">
+              {/* Bubble Background */}
+              <div className="bg-[#95ec6a] rounded-lg p-5 shadow-xl relative min-h-[100px] flex items-center justify-center">
+                <p className="text-zinc-900 text-base leading-relaxed whitespace-pre-wrap font-medium">
+                  {selectedContent}
+                </p>
+                {/* Bubble Triangle (right side style like screenshot) */}
+                <div className="absolute right-[-8px] top-6 w-0 h-0 border-y-[6px] border-y-transparent border-l-[8px] border-l-[#95ec6a]"></div>
+              </div>
+              
+              {/* Close Hint */}
+              <div className="mt-6 text-center">
+                <button 
+                  onClick={() => setSelectedContent(null)}
+                  className="px-8 py-2.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-full backdrop-blur-md transition-all border border-white/20"
+                >
+                  我知道了
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
