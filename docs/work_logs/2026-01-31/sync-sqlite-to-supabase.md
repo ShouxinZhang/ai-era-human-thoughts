@@ -4,7 +4,7 @@
 Make production data non-empty and persist offline-collected data by syncing local SQLite (`apps/web/.local/entries.db`) into Supabase tables (`entries`, `feedback`). This ensures the website shows content immediately after deployment and keeps feedback centralized for triage.
 
 ## Timeline (UTC+8, CST)
-- 2026-01-31 09:xx:xx CST: Updated sync script to support both `entries` and `feedback`.
+- 2026-01-31 09:59:38 CST: Updated sync script to support both `entries` and `feedback`.
 
 ## Design
 - Script: `apps/web/scripts/sync-to-supabase.mjs`

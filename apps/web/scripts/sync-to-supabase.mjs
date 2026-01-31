@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import Database from 'better-sqlite3';
 import { createClient } from '@supabase/supabase-js';
 import { fileURLToPath } from 'url';
@@ -20,15 +21,10 @@ if (!supabaseUrl || !supabaseKey) {
 const __filename = fileURLToPath(import.meta.url);
 const appDir = path.join(path.dirname(__filename), '..');
 const dbPath = path.join(appDir, '.local', 'entries.db');
-try {
-  // eslint-disable-next-line no-unused-expressions
-  dbPath;
-} catch {
-  // no-op
-}
 
-if (!dbPath) {
-  console.error('❌ Local DB path resolution failed.');
+if (!fs.existsSync(dbPath)) {
+  console.error(`❌ Local DB not found: ${dbPath}`);
+  console.error('Run scripts/local-init.mjs first to create it.');
   process.exit(1);
 }
 

@@ -55,6 +55,26 @@ bash apps/web/deploy-ssh.sh root@119.29.70.127
 - 提交一条新记录，列表即时出现。
 - 点击 footer 的"反馈"按钮提交，Supabase 的 `feedback` 表新增一行。
 
+## 数据同步（本地 SQLite → Supabase）
+
+当 Supabase 表为空、或你本地已经积累了 `entries.db` 数据时，可以把本地 SQLite 的 `entries` + `feedback` 同步到 Supabase。
+
+### 脚本
+- `apps/web/scripts/sync-to-supabase.mjs`
+
+### 运行方式（在有 `.local/entries.db` 的机器上）
+```bash
+cd apps/web
+set -a
+source .env.local
+set +a
+node scripts/sync-to-supabase.mjs
+```
+
+### 安全约束
+- 推荐使用 `SUPABASE_SERVICE_ROLE_KEY` 执行一次性同步（可绕过 RLS），但必须只保存在服务器或临时环境变量中，禁止进入 git 历史。
+- 如果没有 service role key，脚本会降级为 anon key 的安全模式（只插入、冲突跳过）。
+
 ## 实际上线记录（2026-01-31）
 
 ### 遇到的问题与解决方案
